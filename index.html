@@ -122,15 +122,12 @@ function updateTone() {
 function analyzeMessage(message) {
   message = message.toLowerCase();
 
-  if (message.includes("wyd") || message.includes("what are you doing") || message.includes("what are you up to")) {
-    return "plan";
-  }
-  if (message.includes("hey") || message.includes("hi")) {
-    return "opening";
-  }
-  if (message.includes("miss you")) {
-    return "emotional";
-  }
+  if (message.includes("wyd") || message.includes("what are you doing") || message.includes("what are you up to")) return "plan";
+  if (message.includes("come over")) return "invite";
+  if (message.includes("miss you")) return "emotional";
+  if (message.includes("u up")) return "late";
+  if (message.includes("hey") || message.includes("hi")) return "opening";
+
   return "general";
 }
 
@@ -147,7 +144,6 @@ function getUniqueReplies(pool) {
   let shuffled = pool.sort(() => 0.5 - Math.random());
   let unique = shuffled.filter(r => !usedReplies.includes(r));
   let selected = unique.slice(0, 3);
-
   usedReplies.push(...selected);
   return selected;
 }
@@ -170,43 +166,88 @@ function generate() {
     let type = analyzeMessage(input);
     let pool = [];
 
-    // NEUTRAL (soft romance / Colleen Hoover vibe)
+    // NEUTRAL
     if (tone == 0) {
-      pool = [
-        "i wasn’t planning anything… but maybe i should be",
-        "just taking the night as it comes",
-        "nothing exciting yet, what about you?",
-        "i could be convinced to do something better",
-        "it’s a pretty quiet night so far"
-      ];
+      if (type == "invite") {
+        pool = [
+          "hmm maybe, what’s the plan?",
+          "tempting… what did you have in mind?",
+          "i could be convinced"
+        ];
+      } else if (type == "emotional") {
+        pool = [
+          "that’s sweet… i miss you too",
+          "you always say things like that",
+          "i didn’t expect that but i like it"
+        ];
+      } else {
+        pool = [
+          "just taking it easy tonight",
+          "nothing planned yet",
+          "keeping it lowkey"
+        ];
+      }
     }
 
-    // PLAYFUL (rom-com energy)
+    // PLAYFUL
     if (tone == 1) {
-      pool = [
-        "depends… are you about to make it interesting?",
-        "nothing yet but i feel like that might change",
-        "waiting to see if a better offer comes in 👀",
-        "i had plans but they suddenly seem less important",
-        "i mean… what are YOU doing?",
-        "this feels like the start of something questionable"
-      ];
+      if (type == "invite") {
+        pool = [
+          "that depends… is it worth it?",
+          "bold of you to assume i’d say yes",
+          "hmm… convince me"
+        ];
+      } else if (type == "late") {
+        pool = [
+          "dangerous question at this hour",
+          "i am now… why?",
+          "depends who’s asking"
+        ];
+      } else if (type == "emotional") {
+        pool = [
+          "oh? you miss me now?",
+          "that’s a little suspicious timing",
+          "careful… i might believe you"
+        ];
+      } else {
+        pool = [
+          "depends… are you about to make it interesting?",
+          "nothing yet but i feel like that might change",
+          "waiting for a better offer 👀"
+        ];
+      }
     }
 
-    // UNHINGED (art of seduction boldness)
+    // UNHINGED
     if (tone == 2) {
-      pool = [
-        "waiting for you to say something worth my time",
-        "honestly? hoping this turns into plans with you",
-        "nothing… but now i’m reconsidering everything",
-        "i feel like you didn’t text me just to ask that",
-        "careful… you’re getting my attention",
-        "this could go very well for you if you play it right"
-      ];
+      if (type == "invite") {
+        pool = [
+          "you didn’t think i’d say no, did you?",
+          "say less. send the address",
+          "careful… i might actually show up"
+        ];
+      } else if (type == "late") {
+        pool = [
+          "you text everyone this late or just me?",
+          "this feels like a bad decision already",
+          "i knew this was coming"
+        ];
+      } else if (type == "emotional") {
+        pool = [
+          "you miss me or you’re bored?",
+          "that’s a dangerous thing to admit",
+          "you don’t get to say that so casually"
+        ];
+      } else {
+        pool = [
+          "you definitely want something from me",
+          "i can tell this is going somewhere",
+          "don’t start something you can’t finish"
+        ];
+      }
     }
 
     let replies = getUniqueReplies(pool);
-
     replies.forEach(r => addBubble(r, "outgoing"));
 
   }, 1000);
