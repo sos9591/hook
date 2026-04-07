@@ -4,77 +4,219 @@
   <title>hook 💖</title>
   <style>
     body {
-      font-family: Arial, sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
       background: linear-gradient(to bottom right, #ffc0cb, #ff69b4);
-      color: white;
-      text-align: center;
-      padding: 50px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
     }
 
-    h1 {
-      font-size: 3em;
+    .phone {
+      width: 320px;
+      height: 600px;
+      background: #fff;
+      border-radius: 40px;
+      padding: 20px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .header {
+      text-align: center;
+      font-weight: bold;
+      margin-bottom: 10px;
+      color: #ff69b4;
+    }
+
+    .chat {
+      flex: 1;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .bubble {
+      max-width: 70%;
+      padding: 10px;
+      border-radius: 18px;
+      margin: 5px 0;
+    }
+
+    .incoming {
+      background: #e5e5ea;
+      align-self: flex-start;
+    }
+
+    .outgoing {
+      background: #ff69b4;
+      color: white;
+      align-self: flex-end;
+    }
+
+    .controls {
+      margin-top: 10px;
+      text-align: center;
     }
 
     input {
+      width: 90%;
       padding: 10px;
-      width: 300px;
-      border-radius: 10px;
-      border: none;
-      margin-top: 20px;
+      border-radius: 20px;
+      border: 1px solid #ddd;
     }
 
     button {
-      margin-top: 20px;
-      padding: 10px 20px;
-      border: none;
+      margin-top: 10px;
+      padding: 8px 16px;
       border-radius: 20px;
-      background-color: white;
-      color: #ff69b4;
-      font-weight: bold;
+      border: none;
+      background: #ff69b4;
+      color: white;
       cursor: pointer;
     }
 
-    .reply {
-      background: rgba(255,255,255,0.2);
-      margin: 10px auto;
-      padding: 10px;
-      border-radius: 15px;
-      width: 300px;
+    .slider {
+      margin-top: 10px;
+    }
+
+    .typing {
+      font-style: italic;
+      color: gray;
+      margin-top: 5px;
     }
   </style>
 </head>
 
 <body>
 
-  <h1>hook 💖</h1>
-  <p>flirt smarter, not harder</p>
+<div class="phone">
+  <div class="header">hook 💖</div>
 
-  <input id="inputMessage" placeholder="paste his text here...">
-  <br>
+  <div class="chat" id="chat"></div>
 
-  <button onclick="generate()">generate replies</button>
+  <div class="controls">
+    <input id="inputMessage" placeholder="iMessage...">
+    
+    <div class="slider">
+      <input type="range" min="0" max="2" value="1" id="toneSlider" oninput="updateTone()">
+      <div id="toneLabel">playful</div>
+    </div>
 
-  <div id="output"></div>
+    <button onclick="generate()">send</button>
+  </div>
+</div>
 
-  <script>
-    function generate() {
-      let replies = [
-        "hmm depends… are you trying to make plans with me? 👀",
-        "nothing exciting yet but you could change that",
-        "currently deciding if i’m going out… convince me?"
-      ];
+<script>
+let tone = 1;
 
-      let output = document.getElementById("output");
-      output.innerHTML = "";
+function updateTone() {
+  tone = document.getElementById("toneSlider").value;
+  let labels = ["neutral", "playful", "unhinged"];
+  document.getElementById("toneLabel").innerText = labels[tone];
+}
 
-      replies.forEach(r => {
-        let div = document.createElement("div");
-        div.className = "reply";
-        div.innerText = r;
-        output.appendChild(div);
-      });
+function analyzeMessage(message) {
+  message = message.toLowerCase();
+
+  if (message.includes("wyd") || message.includes("what are you doing") || message.includes("what are you up to")) {
+    return "plan";
+  }
+
+  if (message.includes("hey") || message.includes("hi")) {
+    return "opening";
+  }
+
+  if (message.includes("miss you")) {
+    return "emotional";
+  }
+
+  return "general";
+}
+
+function addBubble(text, type) {
+  let chat = document.getElementById("chat");
+  let div = document.createElement("div");
+  div.className = "bubble " + type;
+  div.innerText = text;
+  chat.appendChild(div);
+  chat.scrollTop = chat.scrollHeight;
+}
+
+function generate() {
+  let input = document.getElementById("inputMessage").value;
+  if (!input) return;
+
+  addBubble(input, "incoming");
+
+  let chat = document.getElementById("chat");
+
+  let typing = document.createElement("div");
+  typing.className = "typing";
+  typing.innerText = "typing...";
+  chat.appendChild(typing);
+
+  setTimeout(() => {
+    chat.removeChild(typing);
+
+    let type = analyzeMessage(input);
+    let replies = [];
+
+    if (tone == 0) {
+      if (type == "plan") {
+        replies = [
+          "not much, just relaxing",
+          "nothing planned yet",
+          "keeping it lowkey tonight"
+        ];
+      } else {
+        replies = [
+          "hey, how are you?",
+          "hi :)",
+          "hey what's up"
+        ];
+      }
     }
-  </script>
+
+    if (tone == 1) {
+      if (type == "plan") {
+        replies = [
+          "depends… are you about to change that?",
+          "nothing yet but i’m open to better ideas",
+          "waiting to see if something more interesting comes along 👀"
+        ];
+      } else {
+        replies = [
+          "hey… that’s all i get?",
+          "hi?? you can do better than that",
+          "wow a 'hey'… bold"
+        ];
+      }
+    }
+
+    if (tone == 2) {
+      if (type == "plan") {
+        replies = [
+          "waiting for you to invite me somewhere better",
+          "honestly hoping this turns into plans with you",
+          "nothing… but i feel like that’s about to change"
+        ];
+      } else {
+        replies = [
+          "just ‘hey’? i expected more",
+          "you’re lucky i’m responding to that",
+          "that message had zero effort but i’ll let it slide"
+        ];
+      }
+    }
+
+    replies.forEach(r => addBubble(r, "outgoing"));
+
+  }, 1000);
+}
+</script>
 
 </body>
 </html>
