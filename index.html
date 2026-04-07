@@ -111,6 +111,7 @@
 
 <script>
 let tone = 1;
+let usedReplies = [];
 
 function updateTone() {
   tone = document.getElementById("toneSlider").value;
@@ -124,15 +125,12 @@ function analyzeMessage(message) {
   if (message.includes("wyd") || message.includes("what are you doing") || message.includes("what are you up to")) {
     return "plan";
   }
-
   if (message.includes("hey") || message.includes("hi")) {
     return "opening";
   }
-
   if (message.includes("miss you")) {
     return "emotional";
   }
-
   return "general";
 }
 
@@ -145,6 +143,15 @@ function addBubble(text, type) {
   chat.scrollTop = chat.scrollHeight;
 }
 
+function getUniqueReplies(pool) {
+  let shuffled = pool.sort(() => 0.5 - Math.random());
+  let unique = shuffled.filter(r => !usedReplies.includes(r));
+  let selected = unique.slice(0, 3);
+
+  usedReplies.push(...selected);
+  return selected;
+}
+
 function generate() {
   let input = document.getElementById("inputMessage").value;
   if (!input) return;
@@ -152,7 +159,6 @@ function generate() {
   addBubble(input, "incoming");
 
   let chat = document.getElementById("chat");
-
   let typing = document.createElement("div");
   typing.className = "typing";
   typing.innerText = "typing...";
@@ -162,55 +168,44 @@ function generate() {
     chat.removeChild(typing);
 
     let type = analyzeMessage(input);
-    let replies = [];
+    let pool = [];
 
+    // NEUTRAL (soft romance / Colleen Hoover vibe)
     if (tone == 0) {
-      if (type == "plan") {
-        replies = [
-          "not much, just relaxing",
-          "nothing planned yet",
-          "keeping it lowkey tonight"
-        ];
-      } else {
-        replies = [
-          "hey, how are you?",
-          "hi :)",
-          "hey what's up"
-        ];
-      }
+      pool = [
+        "i wasn’t planning anything… but maybe i should be",
+        "just taking the night as it comes",
+        "nothing exciting yet, what about you?",
+        "i could be convinced to do something better",
+        "it’s a pretty quiet night so far"
+      ];
     }
 
+    // PLAYFUL (rom-com energy)
     if (tone == 1) {
-      if (type == "plan") {
-        replies = [
-          "depends… are you about to change that?",
-          "nothing yet but i’m open to better ideas",
-          "waiting to see if something more interesting comes along 👀"
-        ];
-      } else {
-        replies = [
-          "hey… that’s all i get?",
-          "hi?? you can do better than that",
-          "wow a 'hey'… bold"
-        ];
-      }
+      pool = [
+        "depends… are you about to make it interesting?",
+        "nothing yet but i feel like that might change",
+        "waiting to see if a better offer comes in 👀",
+        "i had plans but they suddenly seem less important",
+        "i mean… what are YOU doing?",
+        "this feels like the start of something questionable"
+      ];
     }
 
+    // UNHINGED (art of seduction boldness)
     if (tone == 2) {
-      if (type == "plan") {
-        replies = [
-          "waiting for you to invite me somewhere better",
-          "honestly hoping this turns into plans with you",
-          "nothing… but i feel like that’s about to change"
-        ];
-      } else {
-        replies = [
-          "just ‘hey’? i expected more",
-          "you’re lucky i’m responding to that",
-          "that message had zero effort but i’ll let it slide"
-        ];
-      }
+      pool = [
+        "waiting for you to say something worth my time",
+        "honestly? hoping this turns into plans with you",
+        "nothing… but now i’m reconsidering everything",
+        "i feel like you didn’t text me just to ask that",
+        "careful… you’re getting my attention",
+        "this could go very well for you if you play it right"
+      ];
     }
+
+    let replies = getUniqueReplies(pool);
 
     replies.forEach(r => addBubble(r, "outgoing"));
 
