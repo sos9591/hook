@@ -5,7 +5,7 @@
   <style>
     body {
       font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-      background: linear-gradient(to bottom right, #ffc0cb, #ff69b4);
+      background: linear-gradient(135deg, #ffd6e7, #ff8fb1);
       display: flex;
       justify-content: center;
       align-items: center;
@@ -15,20 +15,22 @@
 
     .phone {
       width: 320px;
-      height: 600px;
-      background: #fff;
+      height: 620px;
+      background: rgba(255,255,255,0.7);
+      backdrop-filter: blur(20px);
       border-radius: 40px;
       padding: 20px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+      box-shadow: 0 20px 50px rgba(0,0,0,0.15);
       display: flex;
       flex-direction: column;
     }
 
     .header {
       text-align: center;
-      font-weight: bold;
+      font-weight: 600;
       margin-bottom: 10px;
-      color: #ff69b4;
+      color: #ff4d88;
+      font-size: 16px;
     }
 
     .chat {
@@ -36,56 +38,61 @@
       overflow-y: auto;
       display: flex;
       flex-direction: column;
+      padding: 10px;
     }
 
     .bubble {
-      max-width: 70%;
-      padding: 10px;
-      border-radius: 18px;
-      margin: 5px 0;
+      max-width: 75%;
+      padding: 12px 14px;
+      border-radius: 20px;
+      margin: 6px 0;
+      font-size: 14px;
+      line-height: 1.4;
     }
 
     .incoming {
-      background: #e5e5ea;
+      background: #f1f1f4;
+      color: #333;
       align-self: flex-start;
     }
 
     .outgoing {
-      background: #ff69b4;
+      background: linear-gradient(135deg, #ff4d88, #ff85a2);
       color: white;
       align-self: flex-end;
     }
 
-    .controls {
-      margin-top: 10px;
-      text-align: center;
-    }
-
     input {
       width: 90%;
-      padding: 10px;
-      border-radius: 20px;
-      border: 1px solid #ddd;
+      padding: 12px;
+      border-radius: 25px;
+      border: none;
+      outline: none;
+      font-size: 14px;
+      margin-top: 8px;
     }
 
     button {
-      margin-top: 10px;
-      padding: 8px 16px;
-      border-radius: 20px;
+      margin-top: 8px;
+      padding: 10px 20px;
+      border-radius: 25px;
       border: none;
-      background: #ff69b4;
+      background: linear-gradient(135deg, #ff4d88, #ff85a2);
       color: white;
+      font-weight: 600;
       cursor: pointer;
     }
 
     .slider {
       margin-top: 10px;
+      font-size: 12px;
+      color: #ff4d88;
     }
 
     .typing {
       font-style: italic;
-      color: gray;
-      margin-top: 5px;
+      color: #888;
+      font-size: 12px;
     }
   </style>
 </head>
@@ -93,20 +100,18 @@
 <body>
 
 <div class="phone">
-  <div class="header">hook 💖</div>
+  <div class="header">hook — flirt smarter 💋</div>
 
   <div class="chat" id="chat"></div>
 
-  <div class="controls">
-    <input id="inputMessage" placeholder="iMessage...">
-    
-    <div class="slider">
-      <input type="range" min="0" max="2" value="1" id="toneSlider" oninput="updateTone()">
-      <div id="toneLabel">playful</div>
-    </div>
+  <input id="inputMessage" placeholder="what did they say…">
 
-    <button onclick="generate()">send</button>
+  <div class="slider">
+    <input type="range" min="0" max="2" value="1" id="toneSlider" oninput="updateTone()">
+    <div id="toneLabel">playful 😏</div>
   </div>
+
+  <button onclick="generate()">send</button>
 </div>
 
 <script>
@@ -115,17 +120,18 @@ let usedReplies = [];
 
 function updateTone() {
   tone = document.getElementById("toneSlider").value;
-  let labels = ["neutral", "playful", "unhinged"];
+  let labels = ["neutral 💌", "playful 😏", "unhinged 🔥"];
   document.getElementById("toneLabel").innerText = labels[tone];
 }
 
 function analyzeMessage(message) {
   message = message.toLowerCase();
 
-  if (message.includes("wyd") || message.includes("what are you doing") || message.includes("what are you up to")) return "plan";
+  if (message.includes("wyd") || message.includes("what are you doing")) return "plan";
   if (message.includes("come over")) return "invite";
   if (message.includes("miss you")) return "emotional";
   if (message.includes("u up")) return "late";
+  if (message.includes("send a pic") || message.includes("picture")) return "pic";
   if (message.includes("hey") || message.includes("hi")) return "opening";
 
   return "general";
@@ -140,12 +146,12 @@ function addBubble(text, type) {
   chat.scrollTop = chat.scrollHeight;
 }
 
-function getUniqueReplies(pool) {
-  let shuffled = pool.sort(() => 0.5 - Math.random());
-  let unique = shuffled.filter(r => !usedReplies.includes(r));
-  let selected = unique.slice(0, 3);
-  usedReplies.push(...selected);
-  return selected;
+function pickOne(pool) {
+  let fresh = pool.filter(r => !usedReplies.includes(r));
+  let options = fresh.length ? fresh : pool;
+  let choice = options[Math.floor(Math.random() * options.length)];
+  usedReplies.push(choice);
+  return choice;
 }
 
 function generate() {
@@ -166,91 +172,106 @@ function generate() {
     let type = analyzeMessage(input);
     let pool = [];
 
-    // NEUTRAL
+    // 💌 NEUTRAL (soft, grounded)
     if (tone == 0) {
-      if (type == "invite") {
+      if (type == "plan") {
         pool = [
-          "hmm maybe, what’s the plan?",
-          "tempting… what did you have in mind?",
-          "i could be convinced"
+          "not much yet… should i change that?",
+          "keeping it lowkey tonight",
+          "nothing exciting so far"
         ];
-      } else if (type == "emotional") {
+      } 
+      else if (type == "emotional") {
         pool = [
-          "that’s sweet… i miss you too",
-          "you always say things like that",
-          "i didn’t expect that but i like it"
+          "that’s sweet… i like hearing that",
+          "you caught me off guard with that",
+          "i didn’t expect that from you"
         ];
-      } else {
+      }
+      else {
         pool = [
-          "just taking it easy tonight",
-          "nothing planned yet",
-          "keeping it lowkey"
+          "hey :)",
+          "hi you",
+          "well that’s a start"
         ];
       }
     }
 
-    // PLAYFUL
+    // 😏 PLAYFUL (rom-com tension)
     if (tone == 1) {
-      if (type == "invite") {
-        pool = [
-          "that depends… is it worth it?",
-          "bold of you to assume i’d say yes",
-          "hmm… convince me"
-        ];
-      } else if (type == "late") {
-        pool = [
-          "dangerous question at this hour",
-          "i am now… why?",
-          "depends who’s asking"
-        ];
-      } else if (type == "emotional") {
-        pool = [
-          "oh? you miss me now?",
-          "that’s a little suspicious timing",
-          "careful… i might believe you"
-        ];
-      } else {
+      if (type == "plan") {
         pool = [
           "depends… are you about to make it interesting?",
-          "nothing yet but i feel like that might change",
-          "waiting for a better offer 👀"
+          "nothing yet but that could change",
+          "why… what are you suggesting?"
+        ];
+      }
+      else if (type == "invite") {
+        pool = [
+          "bold of you to assume i’d say yes",
+          "hmm… convince me",
+          "tempting… keep going"
+        ];
+      }
+      else if (type == "pic") {
+        pool = [
+          "you first",
+          "that’s a bold request",
+          "what would you even do with it?"
+        ];
+      }
+      else if (type == "late") {
+        pool = [
+          "dangerous time to text me",
+          "i am now… why?",
+          "this feels like trouble"
+        ];
+      }
+      else {
+        pool = [
+          "just ‘hey’? that’s all?",
+          "you can do better than that",
+          "hmm try again"
         ];
       }
     }
 
-    // UNHINGED
+    // 🔥 UNHINGED (confident + seductive)
     if (tone == 2) {
       if (type == "invite") {
         pool = [
-          "you didn’t think i’d say no, did you?",
           "say less. send the address",
+          "you didn’t think i’d say no, right?",
           "careful… i might actually show up"
         ];
-      } else if (type == "late") {
+      }
+      else if (type == "pic") {
         pool = [
-          "you text everyone this late or just me?",
-          "this feels like a bad decision already",
-          "i knew this was coming"
+          "you’re bold for asking me that",
+          "you think you’ve earned that?",
+          "what makes you think i would?"
         ];
-      } else if (type == "emotional") {
+      }
+      else if (type == "emotional") {
         pool = [
           "you miss me or you’re bored?",
-          "that’s a dangerous thing to admit",
+          "that’s a dangerous thing to say",
           "you don’t get to say that so casually"
         ];
-      } else {
+      }
+      else {
         pool = [
-          "you definitely want something from me",
-          "i can tell this is going somewhere",
+          "you definitely want something",
+          "i can tell where this is going",
           "don’t start something you can’t finish"
         ];
       }
     }
 
-    let replies = getUniqueReplies(pool);
-    replies.forEach(r => addBubble(r, "outgoing"));
+    let reply = pickOne(pool);
+    addBubble(reply, "outgoing");
 
-  }, 1000);
+  }, 900);
 }
 </script>
 
