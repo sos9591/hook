@@ -89,7 +89,7 @@
 
     button {
       margin-top: 8px;
-      padding: 10px 20px;
+      padding: 12px;
       border-radius: 25px;
       border: none;
       background: linear-gradient(135deg, #ff4d88, #ff85a2);
@@ -123,7 +123,7 @@
 
   <div class="slider">
     <input type="range" min="0" max="100" value="50" id="toneSlider" oninput="updateTone()">
-    <div id="toneLabel">flirt level: 50 😏</div>
+    <div id="toneLabel">playful 😏</div>
   </div>
 
   <button onclick="generate()">generate options</button>
@@ -134,7 +134,12 @@ let flirtLevel = 50;
 
 function updateTone() {
   flirtLevel = document.getElementById("toneSlider").value;
-  document.getElementById("toneLabel").innerText = `flirt level: ${flirtLevel}`;
+
+  let label = "sweet 💌";
+  if (flirtLevel > 33) label = "playful 😏";
+  if (flirtLevel > 66) label = "dangerous 🔥";
+
+  document.getElementById("toneLabel").innerText = label;
 }
 
 function addBubble(text, type) {
@@ -164,11 +169,15 @@ function analyzeMessage(message) {
   message = message.toLowerCase();
 
   if (message.includes("wyd") || message.includes("what are you doing")) return "plan";
-  if (message.includes("come over")) return "invite";
+  if (message.includes("come over") || message.includes("grab drinks")) return "invite";
   if (message.includes("miss you")) return "emotional";
   if (message.includes("u up")) return "late";
   if (message.includes("pic")) return "pic";
   return "general";
+}
+
+function getRandom(arr) {
+  return arr[Math.floor(Math.random() * arr.length)];
 }
 
 function generateReplies(type) {
@@ -200,17 +209,10 @@ function generateReplies(type) {
     bold = ["you definitely want something", "i can tell already", "don’t start something you can’t finish"];
   }
 
-  // blend based on flirt level
-  let mix = [];
-
-  if (flirtLevel < 33) mix = soft;
-  else if (flirtLevel < 66) mix = playful;
-  else mix = bold;
-
   return [
-    mix[Math.floor(Math.random() * mix.length)],
-    playful[Math.floor(Math.random() * playful.length)],
-    bold[Math.floor(Math.random() * bold.length)]
+    getRandom(soft),
+    getRandom(playful),
+    getRandom(bold)
   ];
 }
 
@@ -218,7 +220,13 @@ function generate() {
   let input = document.getElementById("inputMessage").value;
   if (!input) return;
 
+  // clear old options
+  document.querySelectorAll(".option").forEach(o => o.remove());
+
   addBubble(input, "incoming");
+
+  // clear input
+  document.getElementById("inputMessage").value = "";
 
   let chat = document.getElementById("chat");
   let typing = document.createElement("div");
@@ -233,7 +241,7 @@ function generate() {
     let replies = generateReplies(type);
 
     replies.forEach((r, i) => {
-      setTimeout(() => addOption(r), i * 300);
+      setTimeout(() => addOption(r), i * 250);
     });
 
   }, 700);
