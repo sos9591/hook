@@ -14,8 +14,8 @@
     }
 
     .phone {
-      width: 320px;
-      height: 620px;
+      width: 340px;
+      height: 650px;
       background: rgba(255,255,255,0.7);
       backdrop-filter: blur(20px);
       border-radius: 40px;
@@ -60,6 +60,16 @@
       background: linear-gradient(135deg, #ff4d88, #ff85a2);
       color: white;
       align-self: flex-end;
+    }
+
+    .option {
+      background: rgba(255,255,255,0.9);
+      border: 1px solid #ffd1e1;
+      padding: 10px;
+      border-radius: 15px;
+      margin: 5px 0;
+      cursor: pointer;
+      font-size: 13px;
     }
 
     input {
@@ -111,30 +121,16 @@
     <div id="toneLabel">playful 😏</div>
   </div>
 
-  <button onclick="generate()">send</button>
+  <button onclick="generate()">generate options</button>
 </div>
 
 <script>
 let tone = 1;
-let usedReplies = [];
 
 function updateTone() {
   tone = document.getElementById("toneSlider").value;
   let labels = ["neutral 💌", "playful 😏", "unhinged 🔥"];
   document.getElementById("toneLabel").innerText = labels[tone];
-}
-
-function analyzeMessage(message) {
-  message = message.toLowerCase();
-
-  if (message.includes("wyd") || message.includes("what are you doing")) return "plan";
-  if (message.includes("come over")) return "invite";
-  if (message.includes("miss you")) return "emotional";
-  if (message.includes("u up")) return "late";
-  if (message.includes("send a pic") || message.includes("picture")) return "pic";
-  if (message.includes("hey") || message.includes("hi")) return "opening";
-
-  return "general";
 }
 
 function addBubble(text, type) {
@@ -146,15 +142,21 @@ function addBubble(text, type) {
   chat.scrollTop = chat.scrollHeight;
 }
 
-function pickOne(pool) {
-  let fresh = pool.filter(r => !usedReplies.includes(r));
-  let options = fresh.length ? fresh : pool;
-  let choice = options[Math.floor(Math.random() * options.length)];
-  usedReplies.push(choice);
-  return choice;
+function addOption(text) {
+  let chat = document.getElementById("chat");
+  let div = document.createElement("div");
+  div.className = "option";
+  div.innerText = text;
+
+  div.onclick = () => {
+    addBubble(text, "outgoing");
+    div.remove();
+  };
+
+  chat.appendChild(div);
 }
 
-function generate() {
+async function generate() {
   let input = document.getElementById("inputMessage").value;
   if (!input) return;
 
@@ -163,115 +165,58 @@ function generate() {
   let chat = document.getElementById("chat");
   let typing = document.createElement("div");
   typing.className = "typing";
-  typing.innerText = "typing...";
+  typing.innerText = "thinking...";
   chat.appendChild(typing);
 
-  setTimeout(() => {
+  // 🔑 REPLACE WITH YOUR API KEY
+  const API_KEY = "YOUR_OPENAI_API_KEY";
+
+  const toneStyles = [
+    "soft, grounded, slightly flirty",
+    "playful, witty, rom-com tension",
+    "bold, confident, seductive"
+  ];
+
+  const prompt = `You are a texting assistant helping craft attractive replies.
+
+Incoming message: "${input}"
+Tone: ${toneStyles[tone]}
+
+Generate 3 different reply options.
+- Keep them short (1 sentence)
+- Make them feel natural, not robotic
+- Channel modern dating + rom com dialogue
+- Slight unpredictability
+
+Return ONLY the 3 messages, each on a new line.`;
+
+  try {
+    const res = await fetch("https://api.openai.com/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${API_KEY}`
+      },
+      body: JSON.stringify({
+        model: "gpt-4o-mini",
+        messages: [{ role: "user", content: prompt }],
+        temperature: 0.9
+      })
+    });
+
+    const data = await res.json();
     chat.removeChild(typing);
 
-    let type = analyzeMessage(input);
-    let pool = [];
+    const replies = data.choices[0].message.content.split("\n");
 
-    // 💌 NEUTRAL (soft, grounded)
-    if (tone == 0) {
-      if (type == "plan") {
-        pool = [
-          "not much yet… should i change that?",
-          "keeping it lowkey tonight",
-          "nothing exciting so far"
-        ];
-      } 
-      else if (type == "emotional") {
-        pool = [
-          "that’s sweet… i like hearing that",
-          "you caught me off guard with that",
-          "i didn’t expect that from you"
-        ];
-      }
-      else {
-        pool = [
-          "hey :)",
-          "hi you",
-          "well that’s a start"
-        ];
-      }
-    }
+    replies.forEach(r => {
+      if (r.trim()) addOption(r.replace(/^[-\d.\s]+/, ""));
+    });
 
-    // 😏 PLAYFUL (rom-com tension)
-    if (tone == 1) {
-      if (type == "plan") {
-        pool = [
-          "depends… are you about to make it interesting?",
-          "nothing yet but that could change",
-          "why… what are you suggesting?"
-        ];
-      }
-      else if (type == "invite") {
-        pool = [
-          "bold of you to assume i’d say yes",
-          "hmm… convince me",
-          "tempting… keep going"
-        ];
-      }
-      else if (type == "pic") {
-        pool = [
-          "you first",
-          "that’s a bold request",
-          "what would you even do with it?"
-        ];
-      }
-      else if (type == "late") {
-        pool = [
-          "dangerous time to text me",
-          "i am now… why?",
-          "this feels like trouble"
-        ];
-      }
-      else {
-        pool = [
-          "just ‘hey’? that’s all?",
-          "you can do better than that",
-          "hmm try again"
-        ];
-      }
-    }
-
-    // 🔥 UNHINGED (confident + seductive)
-    if (tone == 2) {
-      if (type == "invite") {
-        pool = [
-          "say less. send the address",
-          "you didn’t think i’d say no, right?",
-          "careful… i might actually show up"
-        ];
-      }
-      else if (type == "pic") {
-        pool = [
-          "you’re bold for asking me that",
-          "you think you’ve earned that?",
-          "what makes you think i would?"
-        ];
-      }
-      else if (type == "emotional") {
-        pool = [
-          "you miss me or you’re bored?",
-          "that’s a dangerous thing to say",
-          "you don’t get to say that so casually"
-        ];
-      }
-      else {
-        pool = [
-          "you definitely want something",
-          "i can tell where this is going",
-          "don’t start something you can’t finish"
-        ];
-      }
-    }
-
-    let reply = pickOne(pool);
-    addBubble(reply, "outgoing");
-
-  }, 900);
+  } catch (err) {
+    chat.removeChild(typing);
+    addBubble("error generating reply :(", "outgoing");
+  }
 }
 </script>
 
