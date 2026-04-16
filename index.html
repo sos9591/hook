@@ -65,11 +65,11 @@
     .option {
       background: rgba(255,255,255,0.9);
       border: 1px solid #ffd1e1;
-      padding: 10px;
+      padding: 12px;
       border-radius: 15px;
-      margin: 5px 0;
+      margin: 6px 0;
       cursor: pointer;
-      font-size: 13px;
+      font-size: 14px;
       transition: 0.2s;
     }
 
@@ -88,7 +88,7 @@
     }
 
     button {
-      margin-top: 8px;
+      margin-top: 10px;
       padding: 12px;
       border-radius: 25px;
       border: none;
@@ -99,8 +99,8 @@
     }
 
     .slider {
-      margin-top: 10px;
-      font-size: 12px;
+      margin-top: 12px;
+      font-size: 13px;
       color: #ff4d88;
     }
 
@@ -176,8 +176,9 @@ function analyzeMessage(message) {
   return "general";
 }
 
-function getRandom(arr) {
-  return arr[Math.floor(Math.random() * arr.length)];
+// 🔥 FIX: shuffle so no repeats EVER
+function shuffle(array) {
+  return array.sort(() => 0.5 - Math.random());
 }
 
 function generateReplies(type) {
@@ -185,16 +186,16 @@ function generateReplies(type) {
   let playful = [];
   let bold = [];
 
-  if (type === "plan") {
-    soft = ["just taking it easy tonight", "nothing exciting yet", "keeping it lowkey"];
-    playful = ["depends… are you making it interesting?", "nothing yet but that could change", "why, what are you plotting?"];
-    bold = ["waiting for you to fix that", "bored… entertain me", "about to get into trouble probably"];
-  }
-
-  else if (type === "invite") {
+  if (type === "invite") {
     soft = ["hmm maybe", "tempting", "i’ll think about it"];
     playful = ["bold of you to assume i’d say yes", "convince me", "tempting… keep talking"];
     bold = ["send the address", "you already know the answer", "careful, i might actually show up"];
+  }
+
+  else if (type === "plan") {
+    soft = ["just taking it easy tonight", "nothing exciting yet", "keeping it lowkey"];
+    playful = ["depends… are you making it interesting?", "nothing yet but that could change", "why, what are you plotting?"];
+    bold = ["waiting for you to fix that", "bored… entertain me", "about to get into trouble probably"];
   }
 
   else if (type === "emotional") {
@@ -209,23 +210,24 @@ function generateReplies(type) {
     bold = ["you definitely want something", "i can tell already", "don’t start something you can’t finish"];
   }
 
-  return [
-    getRandom(soft),
-    getRandom(playful),
-    getRandom(bold)
-  ];
+  let combined = [];
+
+  if (flirtLevel < 33) combined = soft.concat(playful);
+  else if (flirtLevel < 66) combined = playful.concat(soft);
+  else combined = bold.concat(playful);
+
+  let unique = shuffle(combined);
+
+  return unique.slice(0, 3);
 }
 
 function generate() {
   let input = document.getElementById("inputMessage").value;
   if (!input) return;
 
-  // clear old options
   document.querySelectorAll(".option").forEach(o => o.remove());
 
   addBubble(input, "incoming");
-
-  // clear input
   document.getElementById("inputMessage").value = "";
 
   let chat = document.getElementById("chat");
