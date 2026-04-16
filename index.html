@@ -47,12 +47,10 @@
       border-radius: 20px;
       margin: 6px 0;
       font-size: 14px;
-      line-height: 1.4;
     }
 
     .incoming {
       background: #f1f1f4;
-      color: #333;
       align-self: flex-start;
     }
 
@@ -63,14 +61,12 @@
     }
 
     .option {
-      background: rgba(255,255,255,0.9);
+      background: white;
       border: 1px solid #ffd1e1;
       padding: 12px;
       border-radius: 15px;
       margin: 6px 0;
       cursor: pointer;
-      font-size: 14px;
-      transition: 0.2s;
     }
 
     .option:hover {
@@ -82,8 +78,6 @@
       padding: 12px;
       border-radius: 25px;
       border: none;
-      outline: none;
-      font-size: 14px;
       margin-top: 8px;
     }
 
@@ -100,7 +94,6 @@
 
     .slider {
       margin-top: 12px;
-      font-size: 13px;
       color: #ff4d88;
     }
 
@@ -116,7 +109,6 @@
 
 <div class="phone">
   <div class="header">hook — flirt smarter 💋</div>
-
   <div class="chat" id="chat"></div>
 
   <input id="inputMessage" placeholder="what did they say…">
@@ -165,60 +157,78 @@ function addOption(text) {
   chat.appendChild(div);
 }
 
-function analyzeMessage(message) {
-  message = message.toLowerCase();
+// 🧠 smarter intent detection
+function analyzeMessage(msg) {
+  msg = msg.toLowerCase();
 
-  if (message.includes("wyd") || message.includes("what are you doing")) return "plan";
-  if (message.includes("come over") || message.includes("grab drinks")) return "invite";
-  if (message.includes("miss you")) return "emotional";
-  if (message.includes("u up")) return "late";
-  if (message.includes("pic")) return "pic";
+  if (msg.includes("drink") || msg.includes("come") || msg.includes("hang")) return "invite";
+  if (msg.includes("?")) return "question";
+  if (msg.includes("miss")) return "emotional";
+  if (msg.length < 10) return "low_effort";
+
   return "general";
 }
 
-// 🔥 FIX: shuffle so no repeats EVER
-function shuffle(array) {
-  return array.sort(() => 0.5 - Math.random());
-}
-
+// 🎯 contextual replies
 function generateReplies(type) {
-  let soft = [];
-  let playful = [];
-  let bold = [];
+  let replies = [];
 
   if (type === "invite") {
-    soft = ["hmm maybe", "tempting", "i’ll think about it"];
-    playful = ["bold of you to assume i’d say yes", "convince me", "tempting… keep talking"];
-    bold = ["send the address", "you already know the answer", "careful, i might actually show up"];
+    if (flirtLevel < 33) {
+      replies = [
+        "that actually sounds kinda nice",
+        "hmm i might be convinced",
+        "depends… where are we going?"
+      ];
+    } else if (flirtLevel < 66) {
+      replies = [
+        "is that your best invite?",
+        "you’re gonna have to try a little harder than that",
+        "tempting… keep talking"
+      ];
+    } else {
+      replies = [
+        "pick me up at 8",
+        "careful, i might say yes",
+        "you don’t even have to ask twice"
+      ];
+    }
   }
 
-  else if (type === "plan") {
-    soft = ["just taking it easy tonight", "nothing exciting yet", "keeping it lowkey"];
-    playful = ["depends… are you making it interesting?", "nothing yet but that could change", "why, what are you plotting?"];
-    bold = ["waiting for you to fix that", "bored… entertain me", "about to get into trouble probably"];
+  else if (type === "low_effort") {
+    replies = [
+      "you can do better than that",
+      "that’s all you’ve got?",
+      "hmm try again"
+    ];
+  }
+
+  else if (type === "question") {
+    replies = [
+      "why do you wanna know?",
+      "depends who’s asking",
+      "what would you do with that information?"
+    ];
   }
 
   else if (type === "emotional") {
-    soft = ["that’s really sweet", "i like hearing that", "you caught me off guard"];
-    playful = ["aww… look at you", "you don’t usually say that", "that’s kinda cute"];
-    bold = ["you miss me or you’re bored?", "dangerous thing to say", "you don’t get to say that so casually"];
+    replies = [
+      "that’s actually really sweet",
+      "you don’t usually say stuff like that",
+      "i kinda like hearing that"
+    ];
   }
 
   else {
-    soft = ["hey :)", "hi you", "what’s up"];
-    playful = ["just ‘hey’?", "that’s all you’ve got?", "try again"];
-    bold = ["you definitely want something", "i can tell already", "don’t start something you can’t finish"];
+    replies = [
+      "hmm interesting",
+      "go on",
+      "i’m listening"
+    ];
   }
 
-  let combined = [];
-
-  if (flirtLevel < 33) combined = soft.concat(playful);
-  else if (flirtLevel < 66) combined = playful.concat(soft);
-  else combined = bold.concat(playful);
-
-  let unique = shuffle(combined);
-
-  return unique.slice(0, 3);
+  // shuffle + pick 3 (no repeats)
+  return replies.sort(() => 0.5 - Math.random()).slice(0, 3);
 }
 
 function generate() {
@@ -246,7 +256,7 @@ function generate() {
       setTimeout(() => addOption(r), i * 250);
     });
 
-  }, 700);
+  }, 600);
 }
 </script>
 
